@@ -1,23 +1,41 @@
 import React from 'react';
 
+import useKeydown from '../../hooks/useKeydown';
+
 export const ToastContext = React.createContext();
 
 function ToastProvider({ children }) {
-  const VARIANT_OPTIONS = ['notice', 'warning', 'success', 'error'];
-  const [message, setMessage] = React.useState('');
-  const [activeVariant, setActiveVariant] = React.useState(VARIANT_OPTIONS[0]);
   const [toasts, setToasts] = React.useState([]);
+
+  const handleEscape = React.useCallback(() => {
+    setToasts([]);
+  }, []);
+
+  useKeydown('Escape', handleEscape);
+
+  function createToast(message, variant) {
+    const newToasts = [
+      ...toasts,
+      {
+        id: Math.random(),
+        message,
+        variant,
+      },
+    ];
+    setToasts(newToasts);
+  }
+
+  function dismissToast(id) {
+    const newToasts = toasts.filter((toast) => toast.id !== id);
+    setToasts(newToasts);
+  }
 
   return (
     <ToastContext
       value={{
-        VARIANT_OPTIONS,
-        message,
-        setMessage,
-        activeVariant,
-        setActiveVariant,
         toasts,
-        setToasts,
+        createToast,
+        dismissToast,
       }}
     >
       {children}
